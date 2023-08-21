@@ -2,7 +2,7 @@ using UnityEngine;
 
 enum PlayerState {
     IDLE,
-    WALK,
+    RUN,
     JUMP
 }
 
@@ -11,43 +11,62 @@ public class PlayerMovement : MonoBehaviour {
 
     private Rigidbody2D body;
     private Animator animator;
-    private BoxCollider2D boxCollider;
+
 
     void Awake() {
         body = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
-        boxCollider = GetComponent<BoxCollider2D>();
     }
 
     // Update is called once per frame
     void Update() {
-        Move();
+        float horizontalInput = Input.GetAxis("Horizontal");
+
+        ChangePlayerState(horizontalInput);
+
+        Move(horizontalInput);
+
         Jump();
     }
 
-    private void Move() {
-        float horizontalInput = Input.GetAxis("Horizontal");
+    private void ChangePlayerState(float horizontalInput) {
+        bool isOnGround = body.IsTouchingLayers(LayerMask.GetMask("Ground"));
+
+        if (isOnGround && horizontalInput != 0) {
+            this.SetAnimation(PlayerState.RUN);
+            return;
+        }
+
+        if (!isOnGround) {
+            this.SetAnimation(PlayerState.JUMP);
+            return;
+        }
+
+        this.SetAnimation(PlayerState.IDLE);
+    }
+
+    private void SetAnimation(PlayerState state) {
+        animator.SetInteger("state", (int)state);
+    }
+
+    private void Move(float horizontalInput) {
         body.velocity = new Vector2(horizontalInput * speed, body.velocity.y);
-        if (horizontalInput != 0) {
-            animator.SetInteger("state", (int)PlayerState.WALK);
-            if (horizontalInput > 0.01f) {
-                transform.localScale = Vector3.one;
-            } else if (horizontalInput < -0.01f) {
-                transform.localScale = new Vector3(-1, 1, 1);
-            }
-        } else {
-            animator.SetInteger("state", (int)PlayerState.IDLE);
+
+        if (horizontalInput == 0) {
+            return;
+        }
+
+        int xCoodirnate = horizontalInput > 0 ? 1 : -1;
+        transform.localScale = new Vector3(xCoodirnate, 1, 1);
+    }
+
+    void Jump() {
+        bool isOnGround = body.IsTouchingLayers(LayerMask.GetMask("Ground"));
+
+        if (isOnGround && Input.GetKey(KeyCode.Space)) {
+            body.velocity = new Vector2(body.velocity.x, speed);
         }
     }
 
-    private void Jump() {
-        var isGround = body.IsTouchingLayers(LayerMask.GetMask("Ground"));
-        if (isGround) {
-            if (Input.GetKey(KeyCode.Space)) {
-                body.velocity = new Vector2(body.velocity.x, speed);
-            }
-        } else {
-            animator.SetInteger("state", (int)PlayerState.JUMP);
-        }
-    }
+
 }
