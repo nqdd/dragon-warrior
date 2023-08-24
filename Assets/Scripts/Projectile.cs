@@ -7,6 +7,8 @@ public class Projectile : MonoBehaviour {
     private Animator animator;
     private float direction = 1;
 
+    public bool isActivate { get { return gameObject.activeInHierarchy; } }
+
     private void Awake() {
         gameObject.SetActive(false);
         animator = GetComponent<Animator>();
@@ -16,10 +18,6 @@ public class Projectile : MonoBehaviour {
     void Update() {
         float movementSpeed = speed * Time.deltaTime;
         transform.Translate(direction * movementSpeed, 0, 0);
-    }
-
-    void OnTriggerEnter2D(Collider2D collision) {
-        animator.SetTrigger("explode");
     }
 
     public void SetDirection(float value) {

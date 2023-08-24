@@ -13,9 +13,12 @@ public class PlayerAnimation : MonoBehaviour {
     private Rigidbody2D body;
     private Animator animator;
 
+    private PlayerAttack playerAttack;
+
     void Awake() {
         body = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
+        playerAttack = GetComponent<PlayerAttack>();
     }
 
     // Update is called once per frame
